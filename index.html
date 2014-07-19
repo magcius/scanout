@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset=utf8>
+    <title>Scanout</title>
+    <style>
+        .buffer-display {
+            position: relative;
+        }
+        .buffer-display canvas {
+            position: absolute;
+            left: 0;            
+        }
+
+        .app {
+            border-radius: 10px;
+            border: 2px solid #cccccc;
+            padding: 16px;
+            min-height: 48px;
+            background-repeat: no-repeat;
+            background-position: 16px 16px;
+        }
+
+        .app.video-player {
+            background-image: url(video-player.png);
+        }
+
+        .monitor {
+            position: relative;
+            background: url(video-display.png);
+            width: 256px;
+            height: 256px;
+        }
+        .monitor .buffer-display {
+            position: absolute;
+            left: 48px;
+            top: 44px;
+        }
+        .monitor .buffer-display canvas {
+            width: 166px;
+            height: 124px;
+        }
+    </style>
+</head>
+<body>
+    <script src="class.js"></script>
+    <script src="utils.js"></script>
+    <script src="base.js"></script>
+    <script src="video-player.js"></script>
+    <script src="monitor.js"></script>
+
+    <script>
+    (function() {
+
+        var Demo = new Class({
+            initialize: function() {
+                this._toplevel = document.body;
+
+                this._crtc = new Monitor.CRTC();
+                this._monitorDisplay = new Monitor.MonitorDisplay(this._crtc);
+                this._toplevel.appendChild(this._monitorDisplay.elem);
+
+                this._videoPlayer = new VideoPlayer.VideoPlayer(this._crtc, new VideoPlayer.ImageSequence('rr', 38));
+                this._toplevel.appendChild(this._videoPlayer.elem);
+
+                window.addEventListener('keypress', this._onKeyPress.bind(this));
+            },
+
+            _onKeyPress: function(e) {
+                var kc = String.fromCharCode(e.which);
+                this._monitorDisplay.handleKey(kc);
+                this._videoPlayer.handleKey(kc);
+            },
+        });
+
+        var demo = new Demo();
+    })();
+    </script>
+</body>
+</html>
