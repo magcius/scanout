@@ -23,6 +23,7 @@
         initialize: function(crtc) {
             this._toplevel = document.createElement('div');
             this._toplevel.classList.add('monitor');
+            this._toplevel.classList.add('disconnected');
 
             this._crtc = crtc;
             this._bufferManager = new Base.SingleBufferManager(null);
@@ -34,15 +35,24 @@
 
         _fetchNextDraw: function(destBuffer, cb) {
             var buf = this._crtc.fetchNextBuffer();
-            var draw = new Base.ChunkedDrawer(destBuffer, buf);
+
+            this._toplevel.classList.toggle('disconnected', !buf);
+
+            var draw;
+            if (buf) {
+                draw = new Base.ChunkedDrawer(destBuffer, buf);
+            } else {
+                draw = null;
+            }
+
             cb(draw);
         },
 
         handleKey: function(kc) {
-            if (kc == 'p')
-                this._drawHelper.start();
-            else if (kc == 'o')
+            if (kc == 'o')
                 this._drawHelper.toggleAuto();
+            else if (kc == 'p')
+                this._drawHelper.drawOnce();
             else if (kc == '[')
                 this._drawHelper.decRate(27);
             else if (kc == ']')

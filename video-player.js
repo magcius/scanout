@@ -52,7 +52,7 @@
 
         initialize: function(crtc, seq) {
             this.parent(crtc);
-            this._toplevel
+            this._toplevel.classList.add('video-player');
 
             this._crtc = crtc;
             this._seq = seq;
@@ -164,13 +164,13 @@
         },
 
         handleKey: function(kc) {
-            if (kc == 'e')
-                this._drawHelper.start();
-            else if (kc == 'r')
+            if (kc == 'q')
                 this._drawHelper.toggleAuto();
-            else if (kc == 'q')
-                this._drawHelper.decRate(33);
             else if (kc == 'w')
+                this._drawHelper.drawOnce();
+            else if (kc == 'e')
+                this._drawHelper.decRate(33);
+            else if (kc == 'r')
                 this._drawHelper.incRate(33);
             else if (kc == 'z')
                 this._bufferManager.display.toggleVis();

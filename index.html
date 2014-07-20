@@ -4,76 +4,237 @@
     <meta charset=utf8>
     <title>Scanout</title>
     <style>
+        html, body {
+            margin: 0px;
+            height: 100%;
+            overflow: hidden;
+        }
+
         .buffer-display {
             position: relative;
+            width: 480px;
+            height: 360px;
         }
         .buffer-display canvas {
             position: absolute;
             left: 0;            
         }
 
-        .app {
-            border-radius: 10px;
-            border: 2px solid #cccccc;
-            padding: 16px;
-            min-height: 48px;
-            background-repeat: no-repeat;
-            background-position: 16px 16px;
+        .demo-container, .demo {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+        }
+        .demo {
+            transition: 1s top;
+        }
+        .demo.is-prev {
+            top: -100%;
+        }
+        .demo.is-next {
+            top: 100%;
         }
 
+        .demo-title {
+            position: absolute;
+        }
+
+        .input-container, .output-container {
+            position: absolute;
+            top: 50%;
+            transform: translate(0, -50%);
+        }
+        .input-container {
+            left: 64px;
+        }
+        .output-container {
+            right: 64px;
+        }
+
+        .app {
+            border: 2px solid #cccccc;
+            padding: 16px;
+            padding-bottom: 64px;
+            display: inline-block;
+            position: relative;
+            background: none no-repeat bottom 8px center;
+        }
         .app.video-player {
             background-image: url(video-player.png);
         }
 
         .monitor {
-            position: relative;
-            background: url(video-display.png);
+            background: url(video-display.png) no-repeat;
             width: 256px;
             height: 256px;
         }
         .monitor .buffer-display {
             position: absolute;
-            left: 48px;
+            left: 46px;
             top: 44px;
         }
+        .monitor .buffer-display,
         .monitor .buffer-display canvas {
             width: 166px;
             height: 124px;
         }
+        .monitor.disconnected .buffer-display {
+            background: url(noise.gif);
+        }
+        .monitor.disconnected .buffer-display canvas {
+            display: none;
+        }
+
+        .fullscreen {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            right: 0px;
+            bottom: 0px;
+            transform: none;
+
+            z-index: 999;
+            background: #444444;
+        }
+        .fullscreen .monitor {
+            background: none;
+        }
+        .fullscreen .buffer-display,
+        .fullscreen .buffer-display canvas {
+            left: 0px;
+            top: 0px;
+            height: 100%;
+            width: auto;
+        }
+        .fullscreen .buffer-display {
+            margin-left: 50%;
+        }
+        .fullscreen .buffer-display canvas {
+            transform: translate(-50%, 0);
+        }
     </style>
 </head>
 <body>
+    <div class="demo-container"></div>
+
     <script src="class.js"></script>
     <script src="utils.js"></script>
     <script src="base.js"></script>
     <script src="video-player.js"></script>
     <script src="monitor.js"></script>
 
-    <script>
+    <script async>
     (function() {
+
+        var Layouts = [
+            // Layout 0: Nothing on the monitor
+            [[], ['monitor']],
+
+            // Layout 1: Single-buffered video player, monitor
+            [['simple-video-player'], ['monitor']],
+
+            // Layout 2: Double-buffered video player, monitor
+            [['double-buffered-video-player'], ['monitor']],
+        ];
 
         var Demo = new Class({
             initialize: function() {
-                this._toplevel = document.body;
+                this._toplevel = document.createElement('div');
+                this._toplevel.classList.add('demo');
+
+                this._inputContainer = document.createElement('div');
+                this._inputContainer.classList.add('input-container');
+                this._toplevel.appendChild(this._inputContainer);
+
+                this._outputContainer = document.createElement('div');
+                this._outputContainer.classList.add('output-container');
+                this._toplevel.appendChild(this._outputContainer);
 
                 this._crtc = new Monitor.CRTC();
-                this._monitorDisplay = new Monitor.MonitorDisplay(this._crtc);
-                this._toplevel.appendChild(this._monitorDisplay.elem);
 
                 this._videoPlayer = new VideoPlayer.VideoPlayer(this._crtc, new VideoPlayer.ImageSequence('rr', 38));
-                this._toplevel.appendChild(this._videoPlayer.elem);
+                this._inputContainer.appendChild(this._videoPlayer.elem);
 
-                window.addEventListener('keypress', this._onKeyPress.bind(this));
+                this._monitorDisplay = new Monitor.MonitorDisplay(this._crtc);
+                this._outputContainer.appendChild(this._monitorDisplay.elem);
+
+                this.elem = this._toplevel;
             },
 
-            _onKeyPress: function(e) {
-                var kc = String.fromCharCode(e.which);
+            demoIn: function() {
+            },
+            demoOut: function() {
+                this._outputContainer.classList.remove('fullscreen');
+            },
+
+            handleKey: function(kc) {
                 this._monitorDisplay.handleKey(kc);
                 this._videoPlayer.handleKey(kc);
+
+                if (kc == 'l')
+                    this._outputContainer.classList.toggle('fullscreen');
             },
         });
 
-        var demo = new Demo();
+        var DemoRunner = new Class({
+            initialize: function() {
+                this._demoContainer = document.querySelector('.demo-container');
+
+                this._demos = [];
+                this._currentDemo = 0;
+
+                var demo = new Demo();
+                this._addDemo(demo);
+                var demo = new Demo();
+                this._addDemo(demo);
+                var demo = new Demo();
+                this._addDemo(demo);
+            },
+
+            _addDemo: function(demo) {
+                this._demos.push(demo);
+                this._demoContainer.appendChild(demo.elem);
+                this._updateStyles();
+            },
+
+            _updateStyles: function() {
+                this._demos.forEach(function(demo, i) {
+                    demo.elem.classList.toggle('is-prev', i < this._currentDemo);
+                    demo.elem.classList.toggle('is-next', i > this._currentDemo);
+                }.bind(this));
+            },
+            _getCurrentDemo: function() {
+                return this._demos[this._currentDemo];
+            },
+            _setCurrentDemo: function(idx) {
+                if (this._currentDemo == idx)
+                    return;
+                if (idx < 0)
+                    return;
+                if (idx > this._demos.length - 1)
+                    return;
+
+                this._getCurrentDemo().demoOut();
+                this._currentDemo = idx;
+                this._getCurrentDemo().demoIn();
+
+                this._updateStyles();
+            },
+
+            handleKey: function(kc) {
+                var idx = '1234567890'.indexOf(kc);
+                if (idx >= 0)
+                    this._setCurrentDemo(idx);
+            },
+        })
+
+        var runner = new DemoRunner();
+
+        window.addEventListener('keypress', function(e) {
+            var kc = String.fromCharCode(e.keyCode);
+            runner.handleKey(kc);
+        });
     })();
     </script>
 </body>

@@ -235,14 +235,14 @@
             }
         },
 
-        start: function() {
+        drawOnce: function() {
             this._fetchAndDraw();
         },
 
         _setAuto: function(auto) {
             this._auto = auto;
             if (this._auto)
-                this.start();
+                this._fetchAndDraw();
         },
 
         toggleAuto: function() {
@@ -263,6 +263,10 @@
         initialize: function(crtc) {
             this._toplevel = document.createElement('div');
             this._toplevel.classList.add('app');
+
+            this._title = document.createElement('span');
+            this._title.classList.add('title');
+            this._toplevel.appendChild(this._title);
 
             this._crtc = crtc;
 
