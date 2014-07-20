@@ -127,17 +127,6 @@
     <script>
     (function() {
 
-        var Layouts = [
-            // Layout 0: Nothing on the monitor
-            [[], ['monitor']],
-
-            // Layout 1: Single-buffered video player, monitor
-            [['simple-video-player'], ['monitor']],
-
-            // Layout 2: Double-buffered video player, monitor
-            [['double-buffered-video-player'], ['monitor']],
-        ];
-
         var Demo = new Class({
             initialize: function() {
                 this._toplevel = document.createElement('div');
@@ -152,14 +141,23 @@
                 this._toplevel.appendChild(this._outputContainer);
 
                 this._crtc = new Monitor.CRTC();
+                this._components = [];
 
-                this._videoPlayer = new VideoPlayer.VideoPlayer(this._crtc, new VideoPlayer.ImageSequence('rr', 38));
-                this._inputContainer.appendChild(this._videoPlayer.elem);
-
-                this._monitorDisplay = new Monitor.MonitorDisplay(this._crtc);
-                this._outputContainer.appendChild(this._monitorDisplay.elem);
+                this._buildLayout();
 
                 this.elem = this._toplevel;
+            },
+
+            _buildLayout: function() {
+            },
+
+            _addInput: function(component) {
+                this._components.push(component);
+                this._inputContainer.appendChild(component.elem);
+            },
+            _addOutput: function(component) {
+                this._components.push(component);
+                this._outputContainer.appendChild(component.elem);
             },
 
             demoIn: function() {
@@ -169,13 +167,41 @@
             },
 
             handleKey: function(kc) {
-                this._monitorDisplay.handleKey(kc);
-                this._videoPlayer.handleKey(kc);
+                this._components.forEach(function(component) {
+                    component.handleKey(kc);
+                });
 
                 if (kc == 'l')
                     this._outputContainer.classList.toggle('fullscreen');
             },
         });
+
+        var MonitorDemo = new Class({
+            Extends: Demo,
+
+            _buildLayout: function() {
+                this.parent();
+                this._addOutput(new Monitor.MonitorDisplay(this._crtc));
+            },
+        });
+
+        var SimpleVideoPlayer = new Class({
+            Extends: MonitorDemo,
+
+            _buildLayout: function() {
+                this.parent();
+                var videoPlayer = new VideoPlayer.VideoPlayer(this._crtc, new VideoPlayer.ImageSequence('rr', 38));
+                this._addInput(videoPlayer);
+            }
+        });
+
+        var DEMOS = [
+            // Layout 0: Nothing on the monitor
+            new MonitorDemo(),
+
+            // Layout 1: Single-buffered video player, monitor
+            new SimpleVideoPlayer(),
+        ];
 
         var DemoRunner = new Class({
             initialize: function() {
@@ -184,12 +210,9 @@
                 this._demos = [];
                 this._currentDemo = 0;
 
-                var demo = new Demo();
-                this._addDemo(demo);
-                var demo = new Demo();
-                this._addDemo(demo);
-                var demo = new Demo();
-                this._addDemo(demo);
+                DEMOS.forEach(function(demo) {
+                    this._addDemo(demo);
+                }.bind(this));
             },
 
             _addDemo: function(demo) {
