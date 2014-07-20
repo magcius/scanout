@@ -232,7 +232,7 @@
         var runner = new DemoRunner();
 
         window.addEventListener('keypress', function(e) {
-            var kc = String.fromCharCode(e.keyCode);
+            var kc = e.key || String.fromCharCode(e.keyCode);
             runner.handleKey(kc);
         });
     })();
