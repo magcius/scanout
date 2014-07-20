@@ -254,25 +254,24 @@
         _fetchAndDraw: function() {
             var destBuffer = this._destBufferManager.fetchNewBuffer();
             this._fetchNextDraw(destBuffer, function(newDraw) {
-                this._currentDraw = newDraw;
-                if (this._currentDraw)
-                    this._frameClock.start();
+                setTimeout(function() {
+                    this._currentDraw = newDraw;
+                    if (this._currentDraw)
+                        this._frameClock.start();
+                }.bind(this), 1);
             }.bind(this));
         },
 
         _tick: function() {
-            if (this._currentDraw && this._currentDraw.tick(this._rate))
+            if (this._currentDraw.tick(this._rate))
                 return true;
 
             this._destBufferManager.onDrawDone();
 
             this._currentDraw = null;
-            if (this._auto) {
+            if (this._auto)
                 this._fetchAndDraw();
-                return true;
-            } else {
-                return false;
-            }
+            return false;
         },
 
         drawOnce: function() {
