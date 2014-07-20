@@ -20,6 +20,26 @@
             left: 0;            
         }
 
+        .always-allocate-buffer-display {
+            width: 500px;
+            height: 200px;
+            position: relative;
+        }
+        .always-allocate-buffer-display .buffer-display {
+            position: absolute;
+            transition: 2s left;
+            left: 0;
+            top: 0;
+        }
+        .always-allocate-buffer-display .buffer-display.scanout {
+            left: 260px;
+            z-index: 999;
+        }
+        .always-allocate-buffer-display .buffer-display canvas {
+            width: 240px;
+            height: 180px;
+        }
+
         .demo-container, .demo {
             width: 100%;
             height: 100%;
@@ -190,14 +210,14 @@
 
             _buildLayout: function() {
                 this.parent();
-                var videoPlayer = new VideoPlayer.VideoPlayer(this._crtc, new VideoPlayer.ImageSequence('rr', 38));
+                var videoPlayer = new VideoPlayer.AlwaysAllocateBufferVideoPlayer(this._crtc, new VideoPlayer.ImageSequence('rr', 38));
                 this._addInput(videoPlayer);
             }
         });
 
         var DEMOS = [
             // Layout 0: Nothing on the monitor
-            new MonitorDemo(),
+            // new MonitorDemo(),
 
             // Layout 1: Single-buffered video player, monitor
             new SimpleVideoPlayer(),
@@ -249,6 +269,8 @@
                 var idx = '1234567890'.indexOf(kc);
                 if (idx >= 0)
                     this._setCurrentDemo(idx);
+
+                this._getCurrentDemo().handleKey(kc);
             },
         })
 

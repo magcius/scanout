@@ -3,7 +3,7 @@
 
     var VideoPlayer = {};
 
-    VideoPlayer.ImageSequence = new Class({
+    var ImageSequence = new Class({
         initialize: function(name, max) {
             this._name = name;
             this._currentFrame = 1;
@@ -33,6 +33,7 @@
                 this._currentFrame = 1;
         },
     });
+    VideoPlayer.ImageSequence = ImageSequence;
 
     // http://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-on-html-canvas
     function roundedRect(ctx, x, y, w, h, r) {
@@ -47,7 +48,7 @@
         ctx.closePath();
     }
 
-    VideoPlayer.VideoPlayer = new Class({
+    var BaseVideoPlayer = new Class({
         Extends: Base.App,
 
         initialize: function(crtc, seq) {
@@ -56,7 +57,7 @@
 
             this._crtc = crtc;
             this._seq = seq;
-            this._bufferManager = new Base.SingleBufferManager(this._crtc);
+            this._bufferManager = this._makeBufferManager();
             this._toplevel.appendChild(this._bufferManager.display.elem);
             this._drawHelper = new Base.ChunkedDrawerHelper(this._bufferManager, this._fetchNextDraw.bind(this));
             this._makeFakeUI();
@@ -176,6 +177,24 @@
                 this._bufferManager.display.toggleVis();
         },
     });
+
+    var SingleBufferVideoPlayer = new Class({
+        Extends: BaseVideoPlayer,
+
+        _makeBufferManager: function() {
+            return new Base.SingleBufferManager(this._crtc);
+        },
+    });
+    VideoPlayer.SingleBufferVideoPlayer = SingleBufferVideoPlayer;
+
+    var AlwaysAllocateBufferVideoPlayer = new Class({
+        Extends: BaseVideoPlayer,
+
+        _makeBufferManager: function() {
+            return new Base.AlwaysAllocateBufferManager(this._crtc);
+        },
+    });
+    VideoPlayer.AlwaysAllocateBufferVideoPlayer = AlwaysAllocateBufferVideoPlayer;
 
     exports.VideoPlayer = VideoPlayer;
 

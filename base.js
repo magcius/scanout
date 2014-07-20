@@ -198,6 +198,46 @@
     });
     Base.SingleBufferManager = SingleBufferManager;
 
+    var AlwaysAllocateBufferDisplay = new Class({
+        initialize: function() {
+            this._toplevel = document.createElement('div');
+            this._toplevel.classList.add('always-allocate-buffer-display');
+
+            this.elem = this._toplevel;
+        },
+
+        addNewBuffer: function(buffer) {
+            var display = new BufferDisplay(buffer);
+            this._toplevel.appendChild(display.elem);
+        },
+
+        moveToScanoutPile: function(buffer) {
+            var display = buffer.$display;
+            display.elem.classList.add('scanout');
+        },
+    });
+
+    // Always allocates a new buffer.
+    var AlwaysAllocateBufferManager = new Class({
+        initialize: function(crtc) {
+            this._crtc = crtc;
+            this.display = new AlwaysAllocateBufferDisplay();
+            this._currentBuffer = null;
+        },
+
+        onDrawDone: function() {
+            this._crtc.setScanoutBuffer(this._currentBuffer);
+            this.display.moveToScanoutPile(this._currentBuffer);
+        },
+
+        fetchNewBuffer: function() {
+            this._currentBuffer = new Buffer();
+            this.display.addNewBuffer(this._currentBuffer);
+            return this._currentBuffer;
+        },
+    });
+    Base.AlwaysAllocateBufferManager = AlwaysAllocateBufferManager;
+
     // Helper for demos that control chunked drawing
     var ChunkedDrawerHelper = new Class({
         initialize: function(destBufferManager, fetchNextDraw) {
