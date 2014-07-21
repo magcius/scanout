@@ -10,6 +10,7 @@
 
             // Allocate the buffer
             this.canvas = Utils.makeCanvas(this.width, this.height);
+            this.canvas.classList.add('buffer-content');
             this.ctx = this.canvas.getContext('2d');
 
             // ... and clear it to solid black.
@@ -25,6 +26,7 @@
             this.canvas = document.createElement('canvas');
             this.canvas.width = bufferWidth;
             this.canvas.height = bufferHeight;
+            this.canvas.classList.add('buffer-content');
             this._ctx = this.canvas.getContext('2d');
 
             this._chunks = [];
@@ -208,6 +210,21 @@
             this._toplevel.classList.add('always-allocate-buffer-display');
 
             this.elem = this._toplevel;
+
+            // Add two fake buffers as our background.
+            var elem;
+            elem = document.createElement('div');
+            elem.classList.add('buffer-display');
+            elem.classList.add('buffer-content');
+            elem.classList.add('fake');
+            this._toplevel.appendChild(elem);
+
+            elem = document.createElement('div');
+            elem.classList.add('buffer-display');
+            elem.classList.add('buffer-content');
+            elem.classList.add('fake');
+            elem.classList.add('scanout');
+            this._toplevel.appendChild(elem);
         },
 
         addNewBuffer: function(buffer) {

@@ -9,9 +9,12 @@ html, body {
     width: 480px;
     height: 360px;
 }
-.buffer-display canvas {
+.buffer-content {
     position: absolute;
     left: 0;            
+}
+.buffer-content.fake {
+    background-color: black;
 }
 
 .always-allocate-buffer-display {
@@ -29,7 +32,7 @@ html, body {
     left: 260px;
     z-index: 999;
 }
-.always-allocate-buffer-display .buffer-display canvas {
+.always-allocate-buffer-display .buffer-content {
     width: 240px;
     height: 180px;
 }
