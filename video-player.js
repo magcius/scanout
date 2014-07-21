@@ -40,19 +40,18 @@
         if (w < 2 * r) r = w / 2;
         if (h < 2 * r) r = h / 2;
         ctx.beginPath();
-        ctx.moveTo(x+r, y);
-        ctx.arcTo(x+w, y,   x+w, y+h, r);
-        ctx.arcTo(x+w, y+h, x,   y+h, r);
-        ctx.arcTo(x,   y+h, x,   y,   r);
-        ctx.arcTo(x,   y,   x+w, y,   r);
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
         ctx.closePath();
     }
 
     var BaseVideoPlayer = new Class({
-        Extends: Base.App,
-
         initialize: function(crtc, seq) {
-            this.parent(crtc);
+            this._toplevel = document.createElement('div');
+            this._toplevel.classList.add('component');
             this._toplevel.classList.add('video-player');
 
             this._crtc = crtc;
@@ -61,6 +60,8 @@
             this._toplevel.appendChild(this._bufferManager.display.elem);
             this._drawHelper = new Base.ChunkedDrawerHelper(this._bufferManager, this._fetchNextDraw.bind(this));
             this._makeFakeUI();
+
+            this.elem = this._toplevel;
         },
 
         _makeFakeUI: function() {
@@ -84,7 +85,11 @@
             ctx.fillStyle = '#000000';
             ctx.globalAlpha = 0.7;
             ctx.fill();
-            this._fakeUIElems.push({ canvas: canvas, x: overlayX, y: overlayY });
+            this._fakeUIElems.push({
+                canvas: canvas,
+                x: overlayX,
+                y: overlayY
+            });
 
             var x = overlayX + iconPad;
 
@@ -99,7 +104,11 @@
             ctx.lineTo(12, 16);
             ctx.fillStyle = '#ffffff';
             ctx.fill();
-            this._fakeUIElems.push({ canvas: canvas, x: x, y: overlayY + iconPad });
+            this._fakeUIElems.push({
+                canvas: canvas,
+                x: x,
+                y: overlayY + iconPad
+            });
             x += iconSize + iconPad;
 
             // Pause button
@@ -109,7 +118,11 @@
             ctx.rect(10, 0, 8, 16);
             ctx.fillStyle = '#ffffff';
             ctx.fill();
-            this._fakeUIElems.push({ canvas: canvas, x: x, y: overlayY + iconPad });
+            this._fakeUIElems.push({
+                canvas: canvas,
+                x: x,
+                y: overlayY + iconPad
+            });
             x += iconSize + iconPad;
 
             // Forward button
@@ -123,13 +136,23 @@
             ctx.lineTo(4, 16);
             ctx.fillStyle = '#ffffff';
             ctx.fill();
-            this._fakeUIElems.push({ canvas: canvas, x: x, y: overlayY + iconPad });
+            this._fakeUIElems.push({
+                canvas: canvas,
+                x: x,
+                y: overlayY + iconPad
+            });
             x += iconSize + iconPad;
 
             var seekW = overlayW - x;
             var seekH = 8;
             var seekY = overlayY + (overlayH - seekH) / 2;
-            this._fakeUIElems.push({ seek: true, x: x, y: seekY, w: seekW, h: seekH });
+            this._fakeUIElems.push({
+                seek: true,
+                x: x,
+                y: seekY,
+                w: seekW,
+                h: seekH
+            });
         },
 
         _makeSeekBar: function(elem, progress) {

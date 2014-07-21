@@ -302,22 +302,6 @@
     });
     Base.ChunkedDrawerHelper = ChunkedDrawerHelper;
 
-    var App = new Class({
-        initialize: function(crtc) {
-            this._toplevel = document.createElement('div');
-            this._toplevel.classList.add('component');
-
-            this._title = document.createElement('span');
-            this._title.classList.add('title');
-            this._toplevel.appendChild(this._title);
-
-            this._crtc = crtc;
-
-            this.elem = this._toplevel;
-        },
-    });
-    Base.App = App;
-
     exports.Base = Base;
 
 })(window);
