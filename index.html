@@ -72,7 +72,7 @@
             right: 64px;
         }
 
-        .app {
+        .component {
             border: 2px solid #cccccc;
             padding: 16px;
             padding-bottom: 64px;
@@ -80,30 +80,11 @@
             position: relative;
             background: none no-repeat bottom 8px center;
         }
-        .app.video-player {
+        .component.video-player {
             background-image: url(video-player.png);
         }
-
-        .monitor {
-            background: url(video-display.png) no-repeat;
-            width: 256px;
-            height: 256px;
-        }
-        .monitor .buffer-display {
-            position: absolute;
-            left: 46px;
-            top: 44px;
-        }
-        .monitor .buffer-display,
-        .monitor .buffer-display canvas {
-            width: 166px;
-            height: 124px;
-        }
-        .monitor.disconnected .buffer-display {
-            background: url(noise.gif);
-        }
-        .monitor.disconnected .buffer-display canvas {
-            display: none;
+        .component.monitor {
+            background-image: url(video-display.png);
         }
 
         .fullscreen {

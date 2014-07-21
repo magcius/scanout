@@ -45,7 +45,11 @@
                 this._ctx.save();
 
                 // Draw each chunk.
-                var x = chunk[0], y = chunk[1], w = chunk[2], h = chunk[3], a = chunk[4];
+                var x = chunk[0],
+                    y = chunk[1],
+                    w = chunk[2],
+                    h = chunk[3],
+                    a = chunk[4];
                 this._ctx.fillStyle = '#ff6666';
                 this._ctx.globalAlpha = a;
                 this._ctx.fillRect(x, y, w, h);
@@ -94,7 +98,8 @@
 
             this._chunkSize = 8;
 
-            var destW = this._src.width, destH = this._src.height;
+            var destW = this._src.width,
+                destH = this._src.height;
             this._chunksInScanline = (destW / this._chunkSize);
             this._totalScanlines = (destH / this._chunkSize);
 
@@ -103,8 +108,7 @@
             this._currentChunk = 0;
         },
 
-        onChunkModified: function(x, y, w, h) {
-        },
+        onChunkModified: function(x, y, w, h) {},
 
         tick: function(dt) {
             // The clock "dt" is in some artificial time space. To pick
@@ -301,7 +305,7 @@
     var App = new Class({
         initialize: function(crtc) {
             this._toplevel = document.createElement('div');
-            this._toplevel.classList.add('app');
+            this._toplevel.classList.add('component');
 
             this._title = document.createElement('span');
             this._title.classList.add('title');

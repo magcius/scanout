@@ -22,8 +22,8 @@
     var MonitorDisplay = new Class({
         initialize: function(crtc) {
             this._toplevel = document.createElement('div');
+            this._toplevel.classList.add('component');
             this._toplevel.classList.add('monitor');
-            this._toplevel.classList.add('disconnected');
 
             this._crtc = crtc;
             this._bufferManager = new Base.SingleBufferManager(null);
@@ -35,8 +35,6 @@
 
         _fetchNextDraw: function(destBuffer, cb) {
             var buf = this._crtc.fetchNextBuffer();
-
-            this._toplevel.classList.toggle('disconnected', !buf);
 
             var draw;
             if (buf) {
