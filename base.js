@@ -50,7 +50,7 @@
                     w = chunk[2],
                     h = chunk[3],
                     a = chunk[4];
-                this._ctx.fillStyle = '#ff6666';
+                this._ctx.fillStyle = '#2266ff';
                 this._ctx.globalAlpha = a;
                 this._ctx.fillRect(x, y, w, h);
 
@@ -87,7 +87,9 @@
     Base.ChunkedDrawerVisualization = ChunkedDrawerVisualization;
 
     var ChunkedDrawer = new Class({
-        initialize: function(dest, src, x, y) {
+        initialize: function(title, dest, src, x, y) {
+            this.title = title;
+
             this._dest = dest;
             this._display = this._dest.$display;
             this._destOffsX = (x || 0);
@@ -143,10 +145,37 @@
     });
     Base.ChunkedDrawer = ChunkedDrawer;
 
+    var DrawSequenceDisplay = new Class({
+        initialize: function(draws) {
+            this._toplevel = document.createElement('div');
+            this._toplevel.classList.add('draw-sequence');
+            this._draws = draws.map(function(draw) {
+                var elem = document.createElement('div');
+                elem.classList.add('draw-sequence-item');
+                elem.textContent = draw.title;
+                this._toplevel.appendChild(elem);
+                return elem;
+            }.bind(this));
+            this._elems = [];
+            this._currentDraw = -1;
+
+            this.elem = this._toplevel;
+        },
+
+        setCurrentDraw: function(idx) {
+            if (this._currentDraw >= 0)
+                this._draws[this._currentDraw].classList.remove('active');
+            this._currentDraw = idx;
+            this._draws[this._currentDraw].classList.add('active');
+        },
+    });
+
     var DrawSequence = new Class({
         initialize: function(draws) {
             this._draws = draws;
             this._currentDraw = 0;
+            this.display = new DrawSequenceDisplay(draws);
+            this.display.setCurrentDraw(0);
         },
 
         tick: function(dt) {
@@ -155,6 +184,7 @@
                 this._currentDraw++;
                 if (this._currentDraw >= this._draws.length)
                     return false;
+                this.display.setCurrentDraw(this._currentDraw);
             }
             return true;
         },
@@ -257,26 +287,44 @@
     });
     Base.AlwaysAllocateBufferManager = AlwaysAllocateBufferManager;
 
+    function empty(elem) {
+        while (elem.firstChild)
+            elem.removeChild(elem.firstChild);
+    }
+
     // Helper for demos that control chunked drawing
     var ChunkedDrawerHelper = new Class({
         initialize: function(destBufferManager, fetchNextDraw) {
+            this._toplevel = document.createElement('div');
+            this._toplevel.classList.add('drawer-helper');
+
             this._destBufferManager = destBufferManager;
             this._fetchNextDraw = fetchNextDraw;
 
             this._frameClock = new Utils.AnimationFrameClock(this._tick.bind(this));
 
+            this._toplevel.appendChild(this._destBufferManager.display.elem);
+            this._drawElemSlot = document.createElement('div');
+            this._toplevel.appendChild(this._drawElemSlot);
+
             this._rate = 20;
             this._auto = false;
             this._currentDraw = null;
+
+            this.elem = this._toplevel;
         },
 
         _fetchAndDraw: function() {
             var destBuffer = this._destBufferManager.fetchNewBuffer();
             this._fetchNextDraw(destBuffer, function(newDraw) {
                 setTimeout(function() {
+                    empty(this._drawElemSlot);
+
                     this._currentDraw = newDraw;
-                    if (this._currentDraw)
+                    if (this._currentDraw) {
+                        this._drawElemSlot.appendChild(this._currentDraw.display.elem);
                         this._frameClock.start();
+                    }
                 }.bind(this), 1);
             }.bind(this));
         },

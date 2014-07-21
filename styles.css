@@ -84,6 +84,15 @@ html, body {
     background-image: url(video-display.png);
 }
 
+.draw-sequence-item {
+    font-family: monospace;
+    color: #666;
+}
+.draw-sequence-item.active {
+    color: black;
+    text-shadow: 1px #ccc;
+}
+
 .fullscreen {
     position: absolute;
     left: 0px;

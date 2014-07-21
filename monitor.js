@@ -27,8 +27,8 @@
 
             this._crtc = crtc;
             this._bufferManager = new Base.SingleBufferManager(null);
-            this._toplevel.appendChild(this._bufferManager.display.elem);
             this._drawHelper = new Base.ChunkedDrawerHelper(this._bufferManager, this._fetchNextDraw.bind(this));
+            this._toplevel.appendChild(this._drawHelper.elem);
 
             this.elem = this._toplevel;
         },
@@ -36,14 +36,15 @@
         _fetchNextDraw: function(destBuffer, cb) {
             var buf = this._crtc.fetchNextBuffer();
 
-            var draw;
+            var seq;
             if (buf) {
-                draw = new Base.ChunkedDrawer(destBuffer, buf);
+                var draw = new Base.ChunkedDrawer("Scan Out Buffer", destBuffer, buf);
+                var seq = new Base.DrawSequence([draw]);
             } else {
-                draw = null;
+                seq = null;
             }
 
-            cb(draw);
+            cb(seq);
         },
 
         handleKey: function(kc) {

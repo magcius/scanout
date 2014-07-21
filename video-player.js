@@ -57,8 +57,8 @@
             this._crtc = crtc;
             this._seq = seq;
             this._bufferManager = this._makeBufferManager();
-            this._toplevel.appendChild(this._bufferManager.display.elem);
             this._drawHelper = new Base.ChunkedDrawerHelper(this._bufferManager, this._fetchNextDraw.bind(this));
+            this._toplevel.appendChild(this._drawHelper.elem);
             this._makeFakeUI();
 
             this.elem = this._toplevel;
@@ -86,6 +86,7 @@
             ctx.globalAlpha = 0.7;
             ctx.fill();
             this._fakeUIElems.push({
+                title: "Draw Rounded Rect",
                 canvas: canvas,
                 x: overlayX,
                 y: overlayY
@@ -105,6 +106,7 @@
             ctx.fillStyle = '#ffffff';
             ctx.fill();
             this._fakeUIElems.push({
+                title: "Draw Prev Button",
                 canvas: canvas,
                 x: x,
                 y: overlayY + iconPad
@@ -119,13 +121,14 @@
             ctx.fillStyle = '#ffffff';
             ctx.fill();
             this._fakeUIElems.push({
+                title: "Draw Pause Button",
                 canvas: canvas,
                 x: x,
                 y: overlayY + iconPad
             });
             x += iconSize + iconPad;
 
-            // Forward button
+            // Next button
             canvas = Utils.makeCanvas(iconSize, iconSize);
             ctx = canvas.getContext('2d');
             ctx.moveTo(0, 0);
@@ -137,6 +140,7 @@
             ctx.fillStyle = '#ffffff';
             ctx.fill();
             this._fakeUIElems.push({
+                title: "Draw Next Button",
                 canvas: canvas,
                 x: x,
                 y: overlayY + iconPad
@@ -147,6 +151,7 @@
             var seekH = 8;
             var seekY = overlayY + (overlayH - seekH) / 2;
             this._fakeUIElems.push({
+                title: "Draw Seek Bar",
                 seek: true,
                 x: x,
                 y: seekY,
@@ -173,14 +178,14 @@
         _fetchNextDraw: function(destBuffer, cb) {
             this._seq.nextFrame(function(img) {
                 var draws = [];
-                draws.push(new Base.ChunkedDrawer(destBuffer, img));
+                draws.push(new Base.ChunkedDrawer("Draw Video", destBuffer, img));
                 this._fakeUIElems.forEach(function(elem) {
                     var canvas;
                     if (elem.canvas)
                         canvas = elem.canvas;
                     else if (elem.seek)
                         canvas = this._makeSeekBar(elem, this._seq.getProgress());
-                    draws.push(new Base.ChunkedDrawer(destBuffer, canvas, elem.x, elem.y));
+                    draws.push(new Base.ChunkedDrawer(elem.title, destBuffer, canvas, elem.x, elem.y));
                 }.bind(this));
                 var seq = new Base.DrawSequence(draws);
                 cb(seq);
