@@ -32,6 +32,7 @@ html, body {
     left: 260px;
     z-index: 999;
 }
+.always-allocate-buffer-display .buffer-display,
 .always-allocate-buffer-display .buffer-content {
     width: 240px;
     height: 180px;
@@ -107,7 +108,7 @@ html, body {
     background: none;
 }
 .fullscreen .buffer-display,
-.fullscreen .buffer-display canvas {
+.fullscreen .buffer-content {
     left: 0px;
     top: 0px;
     height: 100%;
@@ -116,6 +117,6 @@ html, body {
 .fullscreen .buffer-display {
     margin-left: 50%;
 }
-.fullscreen .buffer-display canvas {
+.fullscreen .buffer-content {
     transform: translate(-50%, 0);
 }
