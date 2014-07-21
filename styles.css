@@ -19,7 +19,7 @@ html, body {
 
 .always-allocate-buffer-display {
     width: 500px;
-    height: 200px;
+    height: 180px;
     position: relative;
 }
 .always-allocate-buffer-display .buffer-display {
@@ -85,8 +85,12 @@ html, body {
     background-image: url(video-display.png);
 }
 
+.draw-sequence {
+    margin: 20px;
+}
 .draw-sequence-item {
-    font-family: monospace;
+    line-height: 16px;
+    font: 16pt monospace;
     color: #aaa;
 }
 .draw-sequence-item.active {
