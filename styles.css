@@ -1,0 +1,110 @@
+html, body {
+    margin: 0px;
+    height: 100%;
+    overflow: hidden;
+}
+
+.buffer-display {
+    position: relative;
+    width: 480px;
+    height: 360px;
+}
+.buffer-display canvas {
+    position: absolute;
+    left: 0;            
+}
+
+.always-allocate-buffer-display {
+    width: 500px;
+    height: 200px;
+    position: relative;
+}
+.always-allocate-buffer-display .buffer-display {
+    position: absolute;
+    transition: 2s left;
+    left: 0;
+    top: 0;
+}
+.always-allocate-buffer-display .buffer-display.scanout {
+    left: 260px;
+    z-index: 999;
+}
+.always-allocate-buffer-display .buffer-display canvas {
+    width: 240px;
+    height: 180px;
+}
+
+.demo-container, .demo {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+}
+.demo {
+    transition: 1s top;
+}
+.demo.is-prev {
+    top: -100%;
+}
+.demo.is-next {
+    top: 100%;
+}
+
+.demo-title {
+    position: absolute;
+}
+
+.input-container, .output-container {
+    position: absolute;
+    top: 50%;
+    transform: translate(0, -50%);
+}
+.input-container {
+    left: 64px;
+}
+.output-container {
+    right: 64px;
+}
+
+.component {
+    border: 2px solid #cccccc;
+    padding: 16px;
+    padding-bottom: 64px;
+    display: inline-block;
+    position: relative;
+    background: none no-repeat bottom 8px center;
+}
+.component.video-player {
+    background-image: url(video-player.png);
+}
+.component.monitor {
+    background-image: url(video-display.png);
+}
+
+.fullscreen {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    transform: none;
+
+    z-index: 999;
+    background: #444444;
+}
+.fullscreen .monitor {
+    background: none;
+}
+.fullscreen .buffer-display,
+.fullscreen .buffer-display canvas {
+    left: 0px;
+    top: 0px;
+    height: 100%;
+    width: auto;
+}
+.fullscreen .buffer-display {
+    margin-left: 50%;
+}
+.fullscreen .buffer-display canvas {
+    transform: translate(-50%, 0);
+}
