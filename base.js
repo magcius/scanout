@@ -23,9 +23,7 @@
 
     var ChunkedDrawerVisualization = new Class({
         initialize: function(bufferWidth, bufferHeight) {
-            this.canvas = document.createElement('canvas');
-            this.canvas.width = bufferWidth;
-            this.canvas.height = bufferHeight;
+            this.canvas = Utils.makeCanvas(bufferWidth, bufferHeight);
             this.canvas.classList.add('buffer-content');
             this._ctx = this.canvas.getContext('2d');
 
