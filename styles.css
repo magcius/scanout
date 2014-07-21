@@ -86,11 +86,10 @@ html, body {
 
 .draw-sequence-item {
     font-family: monospace;
-    color: #666;
+    color: #aaa;
 }
 .draw-sequence-item.active {
     color: black;
-    text-shadow: 1px #ccc;
 }
 
 .fullscreen {
