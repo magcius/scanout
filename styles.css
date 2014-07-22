@@ -43,6 +43,8 @@ html, body {
     height: 100%;
     position: absolute;
     top: 0;
+    display: flex;
+    align-items: center;
 }
 .demo {
     transition: 1s top;
@@ -58,18 +60,11 @@ html, body {
     position: absolute;
 }
 
-.input-container, .output-container {
-    position: absolute;
-    top: 50%;
-    transform: translate(0, -50%);
+.component-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
 }
-.input-container {
-    left: 64px;
-}
-.output-container {
-    right: 64px;
-}
-
 .component {
     border: 2px solid #cccccc;
     padding: 16px;

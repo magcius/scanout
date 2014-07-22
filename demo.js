@@ -6,14 +6,6 @@
             this._toplevel = document.createElement('div');
             this._toplevel.classList.add('demo');
 
-            this._inputContainer = document.createElement('div');
-            this._inputContainer.classList.add('input-container');
-            this._toplevel.appendChild(this._inputContainer);
-
-            this._outputContainer = document.createElement('div');
-            this._outputContainer.classList.add('output-container');
-            this._toplevel.appendChild(this._outputContainer);
-
             this._crtc = new Monitor.CRTC();
             this._components = [];
 
@@ -24,46 +16,32 @@
 
         _buildLayout: function() {},
 
-        _addInput: function(component) {
+        _addComponent: function(component) {
             this._components.push(component);
-            this._inputContainer.appendChild(component.elem);
-        },
-        _addOutput: function(component) {
-            this._components.push(component);
-            this._outputContainer.appendChild(component.elem);
+            var wrapper = document.createElement('div');
+            wrapper.classList.add('component-wrapper');
+            wrapper.appendChild(component.elem);
+            this._toplevel.appendChild(wrapper);
         },
 
         demoIn: function() {},
-        demoOut: function() {
-            this._outputContainer.classList.remove('fullscreen');
-        },
+        demoOut: function() {},
 
         handleKey: function(kc) {
             this._components.forEach(function(component) {
                 component.handleKey(kc);
             });
-
-            if (kc == 'l')
-                this._outputContainer.classList.toggle('fullscreen');
-        },
-    });
-
-    var MonitorDemo = new Class({
-        Extends: Demo,
-
-        _buildLayout: function() {
-            this.parent();
-            this._addOutput(new Monitor.MonitorDisplay(this._crtc));
         },
     });
 
     var SimpleVideoPlayer = new Class({
-        Extends: MonitorDemo,
+        Extends:Demo,
 
         _buildLayout: function() {
-            this.parent();
             var videoPlayer = new VideoPlayer.AlwaysAllocateBufferVideoPlayer(this._crtc, new VideoPlayer.ImageSequence('rr', 38));
-            this._addInput(videoPlayer);
+            this._addComponent(videoPlayer);
+
+            this._addComponent(new Monitor.MonitorDisplay(this._crtc));
         }
     });
 
