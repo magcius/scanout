@@ -292,8 +292,8 @@
             elem.removeChild(elem.firstChild);
     }
 
-    // Helper for demos that control chunked drawing
-    var ChunkedDrawerHelper = new Class({
+    // Manages initiating draw sequences.
+    var DrawHelper = new Class({
         initialize: function(destBufferManager, fetchNextDraw) {
             this._toplevel = document.createElement('div');
             this._toplevel.classList.add('drawer-helper');
@@ -363,7 +363,7 @@
             this._rate = Math.max(0, this._rate - v);
         }
     });
-    Base.ChunkedDrawerHelper = ChunkedDrawerHelper;
+    Base.DrawHelper = DrawHelper;
 
     exports.Base = Base;
 

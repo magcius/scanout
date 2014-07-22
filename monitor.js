@@ -27,7 +27,7 @@
 
             this._crtc = crtc;
             this._bufferManager = new Base.SingleBufferManager(null);
-            this._drawHelper = new Base.ChunkedDrawerHelper(this._bufferManager, this._fetchNextDraw.bind(this));
+            this._drawHelper = new Base.DrawHelper(this._bufferManager, this._fetchNextDraw.bind(this));
             this._toplevel.appendChild(this._drawHelper.elem);
 
             this.elem = this._toplevel;

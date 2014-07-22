@@ -57,7 +57,7 @@
             this._crtc = crtc;
             this._seq = seq;
             this._bufferManager = this._makeBufferManager();
-            this._drawHelper = new Base.ChunkedDrawerHelper(this._bufferManager, this._fetchNextDraw.bind(this));
+            this._drawHelper = new Base.DrawHelper(this._bufferManager, this._fetchNextDraw.bind(this));
             this._toplevel.appendChild(this._drawHelper.elem);
             this._makeFakeUI();
 
