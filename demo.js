@@ -34,7 +34,7 @@
         },
     });
 
-    var SimpleVideoPlayer = new Class({
+    var TestDemo = new Class({
         Extends:Demo,
 
         _buildLayout: function() {
@@ -50,7 +50,7 @@
         // new MonitorDemo(),
 
         // Layout 1: Single-buffered video player, monitor
-        new SimpleVideoPlayer(),
+        new TestDemo(),
     ];
 
     var DemoRunner = new Class({
