@@ -86,12 +86,12 @@ html, body {
 .draw-sequence {
     margin: 20px;
 }
-.draw-sequence-item {
+.draw-operation {
     line-height: 16px;
     font: 16pt monospace;
     color: #aaa;
 }
-.draw-sequence-item.active {
+.draw-operation.active {
     color: black;
 }
 

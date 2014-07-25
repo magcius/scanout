@@ -142,12 +142,29 @@
         },
     });
 
+    var DrawOperationDisplay = new Class({
+        initialize: function(drawOp) {
+            this._toplevel = document.createElement('div');
+            this._toplevel.classList.add('draw-operation');
+
+            this._drawOp = drawOp;
+            this._toplevel.textContent = this._drawOp.title;
+
+            this.elem = this._toplevel;
+        },
+
+        setActive: function(active) {
+            this._toplevel.classList.toggle('active', active);
+        },
+    });
+
     var DrawOperation = new Class({
         initialize: function(title, x, y, fetchNextSrcBuffer) {
             this.title = title;
             this.x = x;
             this.y = y;
             this._fetchNextSrcBuffer = fetchNextSrcBuffer;
+            this.display = new DrawOperationDisplay(this);
         },
 
         makeDrawer: function(destBuffer, cb) {
@@ -173,17 +190,18 @@
     Base.SimpleDrawOperation = SimpleDrawOperation;
 
     var DrawSequenceDisplay = new Class({
-        initialize: function(draws) {
+        initialize: function(sequence) {
             this._toplevel = document.createElement('div');
             this._toplevel.classList.add('draw-sequence');
-            this._draws = draws.map(function(draw) {
-                var elem = document.createElement('div');
-                elem.classList.add('draw-sequence-item');
-                elem.textContent = draw.title;
-                this._toplevel.appendChild(elem);
-                return elem;
+
+            this._sequence = sequence;
+            this._subdisplays = [];
+            // XXX: private access, yuck
+            this._sequence._draws.forEach(function(draw) {
+                var display = draw.display;
+                this._subdisplays.push(display);
+                this._toplevel.appendChild(display.elem);
             }.bind(this));
-            this._elems = [];
             this._currentDraw = -1;
 
             this.elem = this._toplevel;
@@ -191,9 +209,13 @@
 
         setCurrentDraw: function(idx) {
             if (this._currentDraw >= 0)
-                this._draws[this._currentDraw].classList.remove('active');
+                this._subdisplays[this._currentDraw].setActive(false);
             this._currentDraw = idx;
-            this._draws[this._currentDraw].classList.add('active');
+            this._subdisplays[this._currentDraw].setActive(true);
+        },
+
+        setActive: function(active) {
+            this._toplevel.classList.toggle('active', active);
         },
     });
 
@@ -201,8 +223,7 @@
         initialize: function(draws) {
             this._draws = draws;
             this._currentDraw = -1;
-            this.display = new DrawSequenceDisplay(draws);
-            this.display.setCurrentDraw(0);
+            this.display = new DrawSequenceDisplay(this);
         },
 
         advance: function() {
@@ -210,6 +231,7 @@
             if (this._currentDraw >= this._draws.length)
                 this._currentDraw = 0;
 
+            this.display.setCurrentDraw(this._currentDraw);
             return (this._currentDraw == 0);
         },
 
