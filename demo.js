@@ -34,23 +34,30 @@
         },
     });
 
-    var TestDemo = new Class({
-        Extends:Demo,
+    var SingleBufferPlayerDemo = new Class({
+        Extends: Demo,
+
+        _buildLayout: function() {
+            var videoPlayer = new VideoPlayer.SingleBufferVideoPlayer(this._crtc, new VideoPlayer.ImageSequence('rr', 38));
+            this._addComponent(videoPlayer);
+            this._addComponent(new Monitor.MonitorDisplay(this._crtc));
+        },
+    });
+
+    var AlwaysAllocateBufferPlayerDemo = new Class({
+        Extends: Demo,
 
         _buildLayout: function() {
             var videoPlayer = new VideoPlayer.AlwaysAllocateBufferVideoPlayer(this._crtc, new VideoPlayer.ImageSequence('rr', 38));
             this._addComponent(videoPlayer);
-
             this._addComponent(new Monitor.MonitorDisplay(this._crtc));
         }
     });
 
     var DEMOS = [
-        // Layout 0: Nothing on the monitor
-        // new MonitorDemo(),
+        new SingleBufferPlayerDemo(),
 
-        // Layout 1: Single-buffered video player, monitor
-        new TestDemo(),
+        new AlwaysAllocateBufferPlayerDemo(),
     ];
 
     var DemoRunner = new Class({
