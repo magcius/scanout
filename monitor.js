@@ -38,7 +38,7 @@
             var seq;
             if (buf) {
                 var draw = new Base.ChunkedDrawer("Scan Out Buffer", destBuffer, buf);
-                var seq = new Base.DrawSequence([draw]);
+                seq = new Base.DrawSequence([draw]);
             } else {
                 seq = null;
             }
