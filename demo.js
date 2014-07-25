@@ -38,7 +38,7 @@
         Extends: Demo,
 
         _buildLayout: function() {
-            var videoPlayer = new VideoPlayer.SingleBufferVideoPlayer(this._crtc, new VideoPlayer.ImageSequence('rr', 38));
+            var videoPlayer = new VideoPlayer.Player(new Base.SingleBufferManager(this._crtc), new VideoPlayer.ImageSequence('rr', 38));
             this._addComponent(videoPlayer);
             this._addComponent(new Monitor.MonitorDisplay(this._crtc));
         },
@@ -48,7 +48,7 @@
         Extends: Demo,
 
         _buildLayout: function() {
-            var videoPlayer = new VideoPlayer.AlwaysAllocateBufferVideoPlayer(this._crtc, new VideoPlayer.ImageSequence('rr', 38));
+            var videoPlayer = new VideoPlayer.Player(new Base.AlwaysAllocateBufferManager(this._crtc), new VideoPlayer.ImageSequence('rr', 38));
             this._addComponent(videoPlayer);
             this._addComponent(new Monitor.MonitorDisplay(this._crtc));
         }

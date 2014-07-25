@@ -48,15 +48,14 @@
         ctx.closePath();
     }
 
-    var BaseVideoPlayer = new Class({
-        initialize: function(crtc, seq) {
+    var Player = new Class({
+        initialize: function(bufferManager, seq) {
             this._toplevel = document.createElement('div');
             this._toplevel.classList.add('component');
             this._toplevel.classList.add('video-player');
 
-            this._crtc = crtc;
             this._seq = seq;
-            this._bufferManager = this._makeBufferManager();
+            this._bufferManager = bufferManager;
 
             this._drawOperations = [];
             this._drawOperations.push(new Base.DrawOperation("Draw Video", 0, 0, function(cb) {
@@ -167,24 +166,7 @@
                 this._bufferManager.display.toggleVis();
         },
     });
-
-    var SingleBufferVideoPlayer = new Class({
-        Extends: BaseVideoPlayer,
-
-        _makeBufferManager: function() {
-            return new Base.SingleBufferManager(this._crtc);
-        },
-    });
-    VideoPlayer.SingleBufferVideoPlayer = SingleBufferVideoPlayer;
-
-    var AlwaysAllocateBufferVideoPlayer = new Class({
-        Extends: BaseVideoPlayer,
-
-        _makeBufferManager: function() {
-            return new Base.AlwaysAllocateBufferManager(this._crtc);
-        },
-    });
-    VideoPlayer.AlwaysAllocateBufferVideoPlayer = AlwaysAllocateBufferVideoPlayer;
+    VideoPlayer.Player = Player;
 
     exports.VideoPlayer = VideoPlayer;
 
