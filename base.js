@@ -50,7 +50,7 @@
                     w = chunk[2],
                     h = chunk[3],
                     a = chunk[4];
-                this._ctx.fillStyle = '#2266ff';
+                this._ctx.fillStyle = '#ff2266';
                 this._ctx.globalAlpha = a;
                 this._ctx.fillRect(x, y, w, h);
 
