@@ -3,7 +3,6 @@
 
     var Monitor = {};
 
-    // A combination CRTC/Monitor
     var CRTC = new Class({
         initialize: function() {
             this._scanoutBuffer = null;
