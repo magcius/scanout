@@ -57,16 +57,23 @@
             this._crtc = crtc;
             this._seq = seq;
             this._bufferManager = this._makeBufferManager();
-            this._drawHelper = new Base.DrawHelper(this._bufferManager, this._fetchNextDraw.bind(this));
-            this._toplevel.appendChild(this._drawHelper.elem);
+
+            this._drawOperations = [];
+            this._drawOperations.push(new Base.DrawOperation("Draw Video", 0, 0, function(cb) {
+                this._seq.nextFrame(function(img) {
+                    cb(img);
+                });
+            }.bind(this)));
             this._makeFakeUI();
+
+            var drawSequence = new Base.DrawSequence(this._drawOperations);
+            this._drawHelper = new Base.DrawHelper(this._bufferManager, drawSequence);
+            this._toplevel.appendChild(this._drawHelper.elem);
 
             this.elem = this._toplevel;
         },
 
         _makeFakeUI: function() {
-            this._fakeUIElems = [];
-
             var canvas, ctx;
 
             var overlayX = 20;
@@ -85,12 +92,7 @@
             ctx.fillStyle = '#000000';
             ctx.globalAlpha = 0.7;
             ctx.fill();
-            this._fakeUIElems.push({
-                title: "Draw Rounded Rect",
-                canvas: canvas,
-                x: overlayX,
-                y: overlayY
-            });
+            this._drawOperations.push(new Base.SimpleDrawOperation("Draw Rounded Rect", overlayX, overlayY, canvas));
 
             var x = overlayX + iconPad;
 
@@ -105,12 +107,7 @@
             ctx.lineTo(12, 16);
             ctx.fillStyle = '#ffffff';
             ctx.fill();
-            this._fakeUIElems.push({
-                title: "Draw Prev Button",
-                canvas: canvas,
-                x: x,
-                y: overlayY + iconPad
-            });
+            this._drawOperations.push(new Base.SimpleDrawOperation("Draw Prev Button", x, overlayY + iconPad, canvas));
             x += iconSize + iconPad;
 
             // Pause button
@@ -120,12 +117,7 @@
             ctx.rect(10, 0, 8, 16);
             ctx.fillStyle = '#ffffff';
             ctx.fill();
-            this._fakeUIElems.push({
-                title: "Draw Pause Button",
-                canvas: canvas,
-                x: x,
-                y: overlayY + iconPad
-            });
+            this._drawOperations.push(new Base.SimpleDrawOperation("Draw Pause Button", x, overlayY + iconPad, canvas));
             x += iconSize + iconPad;
 
             // Next button
@@ -139,57 +131,27 @@
             ctx.lineTo(4, 16);
             ctx.fillStyle = '#ffffff';
             ctx.fill();
-            this._fakeUIElems.push({
-                title: "Draw Next Button",
-                canvas: canvas,
-                x: x,
-                y: overlayY + iconPad
-            });
+            this._drawOperations.push(new Base.SimpleDrawOperation("Draw Next Button", x, overlayY + iconPad, canvas));
             x += iconSize + iconPad;
 
             var seekW = overlayW - x;
             var seekH = 8;
             var seekY = overlayY + (overlayH - seekH) / 2;
-            this._fakeUIElems.push({
-                title: "Draw Seek Bar",
-                seek: true,
-                x: x,
-                y: seekY,
-                w: seekW,
-                h: seekH
-            });
-        },
-
-        _makeSeekBar: function(elem, progress) {
-            // Seek bar
-            var canvas = Utils.makeCanvas(elem.w, elem.h);
-            var ctx = canvas.getContext('2d');
-            // Trough
-            ctx.fillStyle = '#666666';
-            ctx.rect(0, 0, elem.w, elem.h);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.fillStyle = '#ffffff';
-            ctx.rect(0, 0, elem.w * progress, elem.h);
-            ctx.fill();
-            return canvas;
-        },
-
-        _fetchNextDraw: function(destBuffer, cb) {
-            this._seq.nextFrame(function(img) {
-                var draws = [];
-                draws.push(new Base.ChunkedDrawer("Draw Video", destBuffer, img));
-                this._fakeUIElems.forEach(function(elem) {
-                    var canvas;
-                    if (elem.canvas)
-                        canvas = elem.canvas;
-                    else if (elem.seek)
-                        canvas = this._makeSeekBar(elem, this._seq.getProgress());
-                    draws.push(new Base.ChunkedDrawer(elem.title, destBuffer, canvas, elem.x, elem.y));
-                }.bind(this));
-                var seq = new Base.DrawSequence(draws);
-                cb(seq);
-            }.bind(this));
+            this._drawOperations.push(new Base.DrawOperation("Draw Seek Bar", x, seekY, function(cb) {
+                // Seek bar
+                var canvas = Utils.makeCanvas(seekW, seekH);
+                var ctx = canvas.getContext('2d');
+                // Trough
+                ctx.fillStyle = '#666666';
+                ctx.rect(0, 0, seekW, seekH);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.fillStyle = '#ffffff';
+                var progress = this._seq.getProgress();
+                ctx.rect(0, 0, seekW * progress, seekH);
+                ctx.fill();
+                cb(canvas);
+            }.bind(this)));
         },
 
         handleKey: function(kc) {

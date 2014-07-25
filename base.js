@@ -87,9 +87,7 @@
     Base.ChunkedDrawerVisualization = ChunkedDrawerVisualization;
 
     var ChunkedDrawer = new Class({
-        initialize: function(title, dest, src, x, y) {
-            this.title = title;
-
+        initialize: function(dest, src, x, y) {
             this._dest = dest;
             this._display = this._dest.$display;
             this._destOffsX = (x || 0);
@@ -143,7 +141,36 @@
             return true;
         },
     });
-    Base.ChunkedDrawer = ChunkedDrawer;
+
+    var DrawOperation = new Class({
+        initialize: function(title, x, y, fetchNextSrcBuffer) {
+            this.title = title;
+            this.x = x;
+            this.y = y;
+            this._fetchNextSrcBuffer = fetchNextSrcBuffer;
+        },
+
+        makeDrawer: function(destBuffer, cb) {
+            this._fetchNextSrcBuffer(function(srcBuffer) {
+                if (srcBuffer)
+                    cb(new ChunkedDrawer(destBuffer, srcBuffer, this.x, this.y));
+                else
+                    cb(null);
+            }.bind(this));
+        },
+    });
+    Base.DrawOperation = DrawOperation;
+
+    var SimpleDrawOperation = new Class({
+        Extends: DrawOperation,
+
+        initialize: function(title, x, y, src) {
+            this.parent(title, x, y, function(cb) {
+                cb(src);
+            });
+        },
+    });
+    Base.SimpleDrawOperation = SimpleDrawOperation;
 
     var DrawSequenceDisplay = new Class({
         initialize: function(draws) {
@@ -173,20 +200,23 @@
     var DrawSequence = new Class({
         initialize: function(draws) {
             this._draws = draws;
-            this._currentDraw = 0;
+            this._currentDraw = -1;
             this.display = new DrawSequenceDisplay(draws);
             this.display.setCurrentDraw(0);
         },
 
-        tick: function(dt) {
+        advance: function() {
+            this._currentDraw++;
+            if (this._currentDraw >= this._draws.length)
+                this._currentDraw = 0;
+
+            return (this._currentDraw == 0);
+        },
+
+        makeDrawer: function(destBuffer, cb) {
             var draw = this._draws[this._currentDraw];
-            if (!draw.tick(dt)) {
-                this._currentDraw++;
-                if (this._currentDraw >= this._draws.length)
-                    return false;
-                this.display.setCurrentDraw(this._currentDraw);
-            }
-            return true;
+            this.display.setCurrentDraw(this._currentDraw);
+            draw.makeDrawer(destBuffer, cb);
         },
     });
     Base.DrawSequence = DrawSequence;
@@ -287,44 +317,41 @@
     });
     Base.AlwaysAllocateBufferManager = AlwaysAllocateBufferManager;
 
-    function empty(elem) {
-        while (elem.firstChild)
-            elem.removeChild(elem.firstChild);
-    }
-
     // Manages initiating draw sequences.
     var DrawHelper = new Class({
-        initialize: function(destBufferManager, fetchNextDraw) {
+        initialize: function(destBufferManager, drawOperation) {
             this._toplevel = document.createElement('div');
             this._toplevel.classList.add('drawer-helper');
 
             this._destBufferManager = destBufferManager;
-            this._fetchNextDraw = fetchNextDraw;
+            this._drawOperation = drawOperation;
 
             this._frameClock = new Utils.AnimationFrameClock(this._tick.bind(this));
 
             this._toplevel.appendChild(this._destBufferManager.display.elem);
-            this._drawElemSlot = document.createElement('div');
-            this._toplevel.appendChild(this._drawElemSlot);
+            this._toplevel.appendChild(this._drawOperation.display.elem);
 
             this._rate = 20;
             this._auto = false;
             this._currentDraw = null;
+            this._currentDestBuffer = null;
 
             this.elem = this._toplevel;
         },
 
         _fetchAndDraw: function() {
-            var destBuffer = this._destBufferManager.fetchNewBuffer();
-            this._fetchNextDraw(destBuffer, function(newDraw) {
-                setTimeout(function() {
-                    empty(this._drawElemSlot);
+            var isNewFrame = this._drawOperation.advance();
+            if (isNewFrame) {
+                if (this._currentDestBuffer)
+                    this._destBufferManager.onDrawDone(this._currentDestBuffer);
+                this._currentDestBuffer = this._destBufferManager.fetchNewBuffer();
+            }
 
+            this._drawOperation.makeDrawer(this._currentDestBuffer, function(newDraw) {
+                setTimeout(function() {
                     this._currentDraw = newDraw;
-                    if (this._currentDraw) {
-                        this._drawElemSlot.appendChild(this._currentDraw.display.elem);
+                    if (this._currentDraw)
                         this._frameClock.start();
-                    }
                 }.bind(this), 1);
             }.bind(this));
         },
@@ -332,8 +359,6 @@
         _tick: function() {
             if (this._currentDraw.tick(this._rate))
                 return true;
-
-            this._destBufferManager.onDrawDone();
 
             this._currentDraw = null;
             if (this._auto)

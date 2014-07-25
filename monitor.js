@@ -26,24 +26,16 @@
 
             this._crtc = crtc;
             this._bufferManager = new Base.SingleBufferManager(null);
-            this._drawHelper = new Base.DrawHelper(this._bufferManager, this._fetchNextDraw.bind(this));
+
+            var drawOperation = new Base.DrawOperation("Scan Out Buffer", 0, 0, function(cb) {
+                cb(this._crtc.fetchNextBuffer());
+            }.bind(this));
+            var drawSequence = new Base.DrawSequence([drawOperation]);
+
+            this._drawHelper = new Base.DrawHelper(this._bufferManager, drawSequence);
             this._toplevel.appendChild(this._drawHelper.elem);
 
             this.elem = this._toplevel;
-        },
-
-        _fetchNextDraw: function(destBuffer, cb) {
-            var buf = this._crtc.fetchNextBuffer();
-
-            var seq;
-            if (buf) {
-                var draw = new Base.ChunkedDrawer("Scan Out Buffer", destBuffer, buf);
-                seq = new Base.DrawSequence([draw]);
-            } else {
-                seq = null;
-            }
-
-            cb(seq);
         },
 
         handleKey: function(kc) {
