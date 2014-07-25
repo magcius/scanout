@@ -76,7 +76,7 @@ html, body {
 .component.video-player {
     background-image: url(video-player.png);
 }
-.component.xorg {
+.component.xorg-server {
     background-image: url(xorg-logo.png);
 }
 .component.monitor {

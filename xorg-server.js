@@ -5,11 +5,25 @@
 
     var XorgServer = {};
 
+    var Pixmap = new Class({
+        initialize: function(buffer) {
+            this._buffer = buffer;
+            this._pendingDraws = [];
+        },
+
+        _fetchNextDraw: function(destBuffer, cb) {
+        },
+
+        addDraw: function(draw) {
+            this._pendingDraws.push(draw);
+        },
+    });
+
     var Server = new Class({
         initialize: function(crtc) {
             this._toplevel = document.createElement('div');
             this._toplevel.classList.add('component');
-            this._toplevel.classList.add('monitor');
+            this._toplevel.classList.add('xorg-server');
 
             this._crtc = crtc;
             this._bufferManager = new Base.SingleBufferManager(null);
@@ -46,8 +60,8 @@
                 this._bufferManager.display.toggleVis();
         },
     });
-    Monitor.MonitorDisplay = MonitorDisplay;
+    XorgServer.Server = Server;
 
-    exports.Monitor = Monitor;
+    exports.XorgServer = XorgServer;
 
 })(window);
