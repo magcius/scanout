@@ -353,20 +353,20 @@
         initialize: function(crtc) {
             this._crtc = crtc;
             this.display = new AlwaysAllocateBufferDisplay();
-            this._currentBuffer = null;
+            this._renderBuffer = null;
         },
 
         fetchNextDestBuffer: function() {
             // Move the existing buffer to the scanout pile.
-            if (this._currentBuffer) {
-                this._crtc.setScanoutBuffer(this._currentBuffer);
-                this.display.moveToScanoutPile(this._currentBuffer);
+            if (this._renderBuffer) {
+                this._crtc.setScanoutBuffer(this._renderBuffer);
+                this.display.moveToScanoutPile(this._renderBuffer);
             }
 
-            // Create a new buffer
-            this._currentBuffer = new Buffer();
-            this.display.addNewBuffer(this._currentBuffer);
-            return this._currentBuffer;
+            // Create a new buffer to render to
+            this._renderBuffer = new Buffer();
+            this.display.addNewBuffer(this._renderBuffer);
+            return this._renderBuffer;
         },
     });
     Base.AlwaysAllocateBufferManager = AlwaysAllocateBufferManager;
