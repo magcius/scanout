@@ -389,7 +389,8 @@
         },
 
         drawOnce: function() {
-            this._fetchAndDraw();
+            if (this._currentDraw == null)
+                this._fetchAndDraw();
         },
 
         _setAuto: function(auto) {
