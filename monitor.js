@@ -27,7 +27,7 @@
             this._crtc = crtc;
             this._bufferManager = new Base.SingleBufferManager(null);
 
-            var drawOperation = new Base.DrawOperation("Scan Out Buffer", 0, 0, function(cb) {
+            var drawOperation = new Base.DrawOperation("Scan Out Buffer", 0, 0, Base.BUFFER_WIDTH, Base.BUFFER_HEIGHT, function(cb) {
                 cb(this._crtc.fetchNextBuffer());
             }.bind(this));
             var drawSequence = new Base.DrawSequence([drawOperation]);

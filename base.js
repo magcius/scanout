@@ -23,10 +23,12 @@
         },
     });
 
+    var BUFFER_WIDTH = 480;
+    var BUFFER_HEIGHT = 360;
     var Buffer = new Class({
         initialize: function() {
-            this.width = 480;
-            this.height = 360;
+            this.width = BUFFER_WIDTH;
+            this.height = BUFFER_HEIGHT;
 
             // Allocate the buffer
             this.canvas = Utils.makeCanvas(this.width, this.height);
@@ -42,6 +44,9 @@
             this.display = new BufferDisplay(this);
         },
     });
+
+    Base.BUFFER_WIDTH = BUFFER_WIDTH;
+    Base.BUFFER_HEIGHT = BUFFER_HEIGHT;
 
     var ChunkedDrawerVisualization = new Class({
         initialize: function(bufferWidth, bufferHeight) {
@@ -109,7 +114,7 @@
     Base.ChunkedDrawerVisualization = ChunkedDrawerVisualization;
 
     var ChunkedDrawer = new Class({
-        initialize: function(dest, src, x, y) {
+        initialize: function(dest, src, x, y, w, h) {
             this._dest = dest;
             this._display = this._dest.display;
             this._destOffsX = (x || 0);
@@ -120,10 +125,8 @@
 
             this._chunkSize = 8;
 
-            var destW = this._src.width,
-                destH = this._src.height;
-            this._chunksInScanline = (destW / this._chunkSize);
-            this._totalScanlines = (destH / this._chunkSize);
+            this._chunksInScanline = (w / this._chunkSize);
+            this._totalScanlines = (h / this._chunkSize);
 
             this._totalChunks = (this._chunksInScanline * this._totalScanlines);
 
@@ -181,10 +184,12 @@
     });
 
     var DrawOperation = new Class({
-        initialize: function(title, x, y, fetchNextSrcBuffer) {
+        initialize: function(title, x, y, w, h, fetchNextSrcBuffer) {
             this.title = title;
             this.x = x;
             this.y = y;
+            this.w = w;
+            this.h = h;
             this._fetchNextSrcBuffer = fetchNextSrcBuffer;
             this.display = new DrawOperationDisplay(this);
         },
@@ -192,7 +197,7 @@
         makeDrawer: function(destBuffer, cb) {
             this._fetchNextSrcBuffer(function(srcBuffer) {
                 if (srcBuffer)
-                    cb(new ChunkedDrawer(destBuffer, srcBuffer, this.x, this.y));
+                    cb(new ChunkedDrawer(destBuffer, srcBuffer, this.x, this.y, this.w, this.h));
                 else
                     cb(null);
             }.bind(this));
@@ -204,7 +209,7 @@
         Extends: DrawOperation,
 
         initialize: function(title, x, y, src) {
-            this.parent(title, x, y, function(cb) {
+            this.parent(title, x, y, src.width, src.height, function(cb) {
                 cb(src);
             });
         },

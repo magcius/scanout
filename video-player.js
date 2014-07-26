@@ -58,7 +58,7 @@
             this._bufferManager = bufferManager;
 
             this._drawOperations = [];
-            this._drawOperations.push(new Base.DrawOperation("Draw Video", 0, 0, function(cb) {
+            this._drawOperations.push(new Base.DrawOperation("Draw Video", 0, 0, Base.BUFFER_WIDTH, Base.BUFFER_HEIGHT, function(cb) {
                 this._seq.nextFrame(function(img) {
                     cb(img);
                 });
@@ -136,7 +136,7 @@
             var seekW = overlayW - x;
             var seekH = 8;
             var seekY = overlayY + (overlayH - seekH) / 2;
-            this._drawOperations.push(new Base.DrawOperation("Draw Seek Bar", x, seekY, function(cb) {
+            this._drawOperations.push(new Base.DrawOperation("Draw Seek Bar", x, seekY, seekW, seekH, function(cb) {
                 // Seek bar
                 var canvas = Utils.makeCanvas(seekW, seekH);
                 var ctx = canvas.getContext('2d');
