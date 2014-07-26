@@ -321,7 +321,12 @@
 
     var SingleBufferDisplay = new Class({
         initialize: function(buffer) {
-            this.elem = buffer.display.elem;
+            this._buffer = buffer;
+            this.elem = this._buffer.display.elem;
+        },
+
+        toggleVis: function() {
+            this._buffer.display.toggleVis();
         },
 
         setRenderBuffer: function(buffer) { },
