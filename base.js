@@ -114,14 +114,13 @@
     Base.ChunkedDrawerVisualization = ChunkedDrawerVisualization;
 
     var ChunkedDrawer = new Class({
-        initialize: function(dest, src, x, y, w, h) {
+        initialize: function(dest, fetchSrc, x, y, w, h) {
             this._dest = dest;
             this._display = this._dest.display;
             this._destOffsX = (x || 0);
             this._destOffsY = (y || 0);
 
-            this._src = src;
-            this._srcImage = (this._src.canvas || this._src);
+            this._fetchSrc = fetchSrc;
 
             this._chunkSize = 8;
 
@@ -140,30 +139,38 @@
             // an arbitrary point, each chunk takes 1 unit in this time
             // space to scan.
 
-            while (dt--) {
-                var cx = Math.floor(this._currentChunk % this._chunksInScanline);
-                var cy = Math.floor(this._currentChunk / this._chunksInScanline);
+            var startChunk = this._currentChunk;
+            var endChunk = Math.min(startChunk + dt, this._totalChunks);
 
-                var s = this._chunkSize;
-                var srcX = cx * s;
-                var srcY = cy * s;
-                var destX = this._destOffsX + srcX;
-                var destY = this._destOffsY + srcY;
+            this._fetchSrc(function(src) {
+                if (!src)
+                    return;
 
-                this._dest.ctx.drawImage(this._srcImage,
-                    srcX, srcY, s, s,
-                    destX, destY, s, s);
+                var srcImage = (src.canvas || src);
 
-                if (this._display)
-                    this._display.onChunkModified(destX, destY, s, s);
+                var chunk = startChunk;
+                for (var chunk = startChunk; chunk < endChunk; chunk++) {
+                    var cx = Math.floor(chunk % this._chunksInScanline);
+                    var cy = Math.floor(chunk / this._chunksInScanline);
 
-                this._currentChunk++;
-                if (this._currentChunk >= this._totalChunks) {
-                    // We're done.
-                    return false;
+                    var s = this._chunkSize;
+                    var srcX = cx * s;
+                    var srcY = cy * s;
+                    var destX = this._destOffsX + srcX;
+                    var destY = this._destOffsY + srcY;
+
+                    this._dest.ctx.drawImage(srcImage,
+                                             srcX, srcY, s, s,
+                                             destX, destY, s, s);
+
+                    if (this._display)
+                        this._display.onChunkModified(destX, destY, s, s);
                 }
-            }
-            return true;
+            }.bind(this));
+
+            this._currentChunk = endChunk;
+
+            return (endChunk < this._totalChunks);
         },
     });
 
@@ -184,29 +191,51 @@
     });
 
     var DrawOperation = new Class({
-        initialize: function(title, x, y, w, h, fetchNextSrcBuffer) {
+        initialize: function(title, x, y, w, h) {
             this.title = title;
             this.x = x;
             this.y = y;
             this.w = w;
             this.h = h;
-            this._fetchNextSrcBuffer = fetchNextSrcBuffer;
             this.display = new DrawOperationDisplay(this);
+        },
+    });
+
+    var FullFrameDrawOperation = new Class({
+        Extends: DrawOperation,
+
+        initialize: function(title, x, y, w, h, fetchNextSrcBuffer) {
+            this.parent(title, x, y, w, h);
+            this._fetchNextSrcBuffer = fetchNextSrcBuffer;
         },
 
         makeDrawer: function(destBuffer, cb) {
             this._fetchNextSrcBuffer(function(srcBuffer) {
                 if (srcBuffer)
-                    cb(new ChunkedDrawer(destBuffer, srcBuffer, this.x, this.y, this.w, this.h));
+                    cb(new ChunkedDrawer(destBuffer, function(cb) { cb(srcBuffer); }, this.x, this.y, this.w, this.h));
                 else
                     cb(null);
             }.bind(this));
         },
     });
-    Base.DrawOperation = DrawOperation;
+    Base.FullFrameDrawOperation = FullFrameDrawOperation;
+
+    var DynamicScanoutDrawOperation = new Class({
+        Extends: DrawOperation,
+
+        initialize: function(title, x, y, w, h, fetchNextSrcBuffer) {
+            this.parent(title, x, y, w, h);
+            this._fetchNextSrcBuffer = fetchNextSrcBuffer;
+        },
+
+        makeDrawer: function(destBuffer, cb) {
+            cb(new ChunkedDrawer(destBuffer, this._fetchNextSrcBuffer, this.x, this.y, this.w, this.h));
+        },
+    });
+    Base.DynamicScanoutDrawOperation = DynamicScanoutDrawOperation;
 
     var SimpleDrawOperation = new Class({
-        Extends: DrawOperation,
+        Extends: FullFrameDrawOperation,
 
         initialize: function(title, x, y, src) {
             this.parent(title, x, y, src.width, src.height, function(cb) {
