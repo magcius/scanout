@@ -299,17 +299,45 @@
     });
     Base.DrawSequence = DrawSequence;
 
-    var SingleBufferManager = new Class({
+    var BufferManagerBase = new Class({
         initialize: function(crtc) {
             this._crtc = crtc;
-            this._buffer = new Buffer();
-            this.display = this._buffer.display;
-
-            if (this._crtc)
-                this._crtc.setScanoutBuffer(this._buffer);
+            this._renderBuffer = null;
         },
 
         fetchNextDestBuffer: function() {
+            // Set the current render buffer to scanout.
+            if (this._crtc && this._renderBuffer) {
+                this._crtc.setScanoutBuffer(this._renderBuffer);
+                this.display.setScanoutBuffer(this._renderBuffer);
+            }
+
+            // And get the next buffer to render to.
+            this._renderBuffer = this._fetchNextDestBuffer();
+            this.display.setRenderBuffer(this._renderBuffer);
+            return this._renderBuffer;
+        },
+    });
+
+    var SingleBufferDisplay = new Class({
+        initialize: function(buffer) {
+            this.elem = buffer.display.elem;
+        },
+
+        setRenderBuffer: function(buffer) { },
+        setScanoutBuffer: function(buffer) { },
+    });
+
+    var SingleBufferManager = new Class({
+        Extends: BufferManagerBase,
+
+        initialize: function(crtc) {
+            this._crtc = crtc;
+            this._buffer = new Buffer();
+            this.display = new SingleBufferDisplay(this._buffer);
+        },
+
+        _fetchNextDestBuffer: function() {
             return this._buffer;
         },
     });
@@ -338,11 +366,11 @@
             this._toplevel.appendChild(elem);
         },
 
-        addNewBuffer: function(buffer) {
+        setRenderBuffer: function(buffer) {
             this._toplevel.appendChild(buffer.display.elem);
         },
 
-        moveToScanoutPile: function(buffer) {
+        setScanoutBuffer: function(buffer) {
             var display = buffer.display;
             display.elem.classList.add('scanout');
         },
@@ -350,23 +378,15 @@
 
     // Always allocates a new buffer.
     var AlwaysAllocateBufferManager = new Class({
+        Extends: BufferManagerBase,
+
         initialize: function(crtc) {
-            this._crtc = crtc;
+            this.parent(crtc);
             this.display = new AlwaysAllocateBufferDisplay();
-            this._renderBuffer = null;
         },
 
-        fetchNextDestBuffer: function() {
-            // Move the existing buffer to the scanout pile.
-            if (this._renderBuffer) {
-                this._crtc.setScanoutBuffer(this._renderBuffer);
-                this.display.moveToScanoutPile(this._renderBuffer);
-            }
-
-            // Create a new buffer to render to
-            this._renderBuffer = new Buffer();
-            this.display.addNewBuffer(this._renderBuffer);
-            return this._renderBuffer;
+        _fetchNextDestBuffer: function() {
+            return new Buffer();
         },
     });
     Base.AlwaysAllocateBufferManager = AlwaysAllocateBufferManager;
