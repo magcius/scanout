@@ -54,10 +54,24 @@
         }
     });
 
+    var DoubleBufferPlayerDemo = new Class({
+        Extends: Demo,
+
+        _buildLayout: function() {
+            var videoPlayer = new VideoPlayer.Player(new Base.NBufferManager(this._crtc, 4), new VideoPlayer.ImageSequence('rr', 38));
+            this._addComponent(videoPlayer);
+            this._addComponent(new Monitor.MonitorDisplay(this._crtc));
+        }
+    });
+
     var DEMOS = [
+        new DoubleBufferPlayerDemo(),
+
+        /*
         new SingleBufferPlayerDemo(),
 
         new AlwaysAllocateBufferPlayerDemo(),
+        */
     ];
 
     var DemoRunner = new Class({

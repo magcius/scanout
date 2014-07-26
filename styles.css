@@ -38,6 +38,27 @@ html, body {
     height: 180px;
 }
 
+.n-buffer-display .buffer-display {
+    transition: 0.5s transform, 1s opacity, 1s border-width;
+    transform: scale(0.8, 0.8);
+    opacity: 0.5;
+    border: 10px solid transparent;
+}
+
+.n-buffer-display .buffer-display.active,
+.n-buffer-display .buffer-display.scanout {
+    transform: scale(1.0, 1.0);
+    opacity: 1.0;
+}
+
+.n-buffer-display .buffer-display.active {
+    border-color: red;
+}
+
+.n-buffer-display .buffer-display.scanout {
+    border-color: green;
+}
+
 .demo-container, .demo {
     width: 100%;
     height: 100%;

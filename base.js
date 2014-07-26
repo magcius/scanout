@@ -396,6 +396,60 @@
     });
     Base.AlwaysAllocateBufferManager = AlwaysAllocateBufferManager;
 
+    var NBufferDisplay = new Class({
+        initialize: function(buffers) {
+            this._toplevel = document.createElement('div');
+            this._toplevel.classList.add('n-buffer-display');
+
+            this._buffers = buffers;
+            this._buffers.forEach(function(buffer) {
+                this._toplevel.appendChild(buffer.display.elem);
+            }.bind(this));
+
+            this._scanoutBuffer = null;
+            this._renderBuffer = null;
+
+            this.elem = this._toplevel;
+        },
+
+        setScanoutBuffer: function(buffer) {
+            if (this._scanoutBuffer)
+                this._scanoutBuffer.display.elem.classList.remove('scanout');
+            this._scanoutBuffer = buffer;
+            this._scanoutBuffer.display.elem.classList.add('scanout');
+        },
+
+        setRenderBuffer: function(buffer) {
+            if (this._renderBuffer)
+                this._renderBuffer.display.elem.classList.remove('active');
+            this._renderBuffer = buffer;
+            this._renderBuffer.display.elem.classList.add('active');
+        },
+    });
+
+    var NBufferManager = new Class({
+        Extends: BufferManagerBase,
+
+        initialize: function(crtc, nBuffers) {
+            this.parent(crtc);
+
+            this._buffers = [];
+            for (var i = 0; i < nBuffers; i++)
+                this._buffers.push(new Buffer());
+
+            this.display = new NBufferDisplay(this._buffers);
+            this._renderBufferIdx = -1;
+        },
+
+        _fetchNextDestBuffer: function() {
+            this._renderBufferIdx++;
+            if (this._renderBufferIdx >= this._buffers.length)
+                this._renderBufferIdx = 0;
+            return this._buffers[this._renderBufferIdx];
+        },
+    });
+    Base.NBufferManager = NBufferManager;
+
     // Manages initiating draw sequences.
     var DrawHelper = new Class({
         initialize: function(destBufferManager, drawOperation) {
