@@ -3,6 +3,26 @@
 
     var Base = {};
 
+    var BufferDisplay = new Class({
+        initialize: function(buffer) {
+            this._buffer = buffer;
+
+            this._toplevel = document.createElement('div');
+            this._toplevel.appendChild(this._buffer.canvas);
+            this._toplevel.classList.add('buffer-display');
+
+            this._drawVis = new ChunkedDrawerVisualization(this._buffer.width, this._buffer.height);
+            this._toplevel.appendChild(this._drawVis.canvas);
+            this.onChunkModified = this._drawVis.onChunkModified.bind(this._drawVis);
+
+            this.elem = this._toplevel;
+        },
+
+        toggleVis: function() {
+            this._drawVis.toggle();
+        },
+    });
+
     var Buffer = new Class({
         initialize: function() {
             this.width = 480;
@@ -18,6 +38,8 @@
             this.ctx.fillStyle = '#000000';
             this.ctx.fillRect(0, 0, this.width, this.height);
             this.ctx.restore();
+
+            this.display = new BufferDisplay(this);
         },
     });
 
@@ -89,7 +111,7 @@
     var ChunkedDrawer = new Class({
         initialize: function(dest, src, x, y) {
             this._dest = dest;
-            this._display = this._dest.$display;
+            this._display = this._dest.display;
             this._destOffsX = (x || 0);
             this._destOffsY = (y || 0);
 
@@ -243,32 +265,11 @@
     });
     Base.DrawSequence = DrawSequence;
 
-    var BufferDisplay = new Class({
-        initialize: function(buffer) {
-            this._buffer = buffer;
-            this._buffer.$display = this;
-
-            this._toplevel = document.createElement('div');
-            this._toplevel.appendChild(this._buffer.canvas);
-            this._toplevel.classList.add('buffer-display');
-
-            this._drawVis = new ChunkedDrawerVisualization(this._buffer.width, this._buffer.height);
-            this._toplevel.appendChild(this._drawVis.canvas);
-            this.onChunkModified = this._drawVis.onChunkModified.bind(this._drawVis);
-
-            this.elem = this._toplevel;
-        },
-
-        toggleVis: function() {
-            this._drawVis.toggle();
-        },
-    });
-
     var SingleBufferManager = new Class({
         initialize: function(crtc) {
             this._crtc = crtc;
             this._buffer = new Buffer();
-            this.display = new BufferDisplay(this._buffer);
+            this.display = this._buffer.display;
 
             if (this._crtc)
                 this._crtc.setScanoutBuffer(this._buffer);
@@ -304,12 +305,11 @@
         },
 
         addNewBuffer: function(buffer) {
-            var display = new BufferDisplay(buffer);
-            this._toplevel.appendChild(display.elem);
+            this._toplevel.appendChild(buffer.display.elem);
         },
 
         moveToScanoutPile: function(buffer) {
-            var display = buffer.$display;
+            var display = buffer.display;
             display.elem.classList.add('scanout');
         },
     });
