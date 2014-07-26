@@ -65,12 +65,12 @@
     });
 
     var DEMOS = [
-        new DoubleBufferPlayerDemo(),
-
-        /*
         new SingleBufferPlayerDemo(),
 
         new AlwaysAllocateBufferPlayerDemo(),
+
+        /*
+        new DoubleBufferPlayerDemo(),
         */
     ];
 
