@@ -274,10 +274,6 @@
                 this._crtc.setScanoutBuffer(this._buffer);
         },
 
-        onDrawDone: function() {
-            // Don't do anything.
-        },
-
         fetchNewBuffer: function() {
             return this._buffer;
         },
@@ -326,12 +322,14 @@
             this._currentBuffer = null;
         },
 
-        onDrawDone: function() {
-            this._crtc.setScanoutBuffer(this._currentBuffer);
-            this.display.moveToScanoutPile(this._currentBuffer);
-        },
-
         fetchNewBuffer: function() {
+            // Move the existing buffer to the scanout pile.
+            if (this._currentBuffer) {
+                this._crtc.setScanoutBuffer(this._currentBuffer);
+                this.display.moveToScanoutPile(this._currentBuffer);
+            }
+
+            // Create a new buffer
             this._currentBuffer = new Buffer();
             this.display.addNewBuffer(this._currentBuffer);
             return this._currentBuffer;
@@ -363,11 +361,8 @@
 
         _fetchAndDraw: function() {
             var isNewFrame = this._drawOperation.advance();
-            if (isNewFrame) {
-                if (this._currentDestBuffer)
-                    this._destBufferManager.onDrawDone(this._currentDestBuffer);
+            if (isNewFrame)
                 this._currentDestBuffer = this._destBufferManager.fetchNewBuffer();
-            }
 
             this._drawOperation.makeDrawer(this._currentDestBuffer, function(newDraw) {
                 setTimeout(function() {
