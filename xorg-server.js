@@ -26,8 +26,9 @@
             this._toplevel.classList.add('xorg-server');
 
             this._crtc = crtc;
-            this._bufferManager = new Base.SingleBufferManager(null);
-            this._drawHelper = new Base.DrawHelper(this._bufferManager, this._fetchNextDraw.bind(this));
+            this._bufferManager = new Base.SingleBufferManager(this._crtc);
+
+            this._drawHelper = new Base.DrawHelper(this._bufferManager, drawSequence);
             this._toplevel.appendChild(this._drawHelper.elem);
 
             this.elem = this._toplevel;
